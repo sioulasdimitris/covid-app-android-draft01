@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -29,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,13 +40,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private FirebaseDatabase database; //database object
     private FirebaseAuth mAuth;
     private EditText emailEditText,passwordEditText;
-    private Button signInButton,signOutButton, signUpButton,bookButton;
+    private Button signInButton,signOutButton, signUpButton,bookButton, showMapButton;
     private TextView userTextView,usersLocationTextView,adminReporTextView,closestVaccinationCenterLabelTextView;
     private DatePicker datePicker1;
     // variables
     private String email;
     private boolean isAdmin = false;
     private ArrayList<VaccinationCenter> availableVaccinationCenters = new ArrayList<VaccinationCenter>();
+    private ArrayList<String> myLocations = new ArrayList<String>();
     private VaccinationCenter closestCenter;
     private Location usersLocation;
     private String uid;
@@ -69,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         signOutButton = findViewById(R.id.signOutButton);
         signUpButton = findViewById(R.id.signUpButton);
         userTextView = findViewById(R.id.userTextView);
+        showMapButton = findViewById(R.id.showMapButton);
         usersLocationTextView = findViewById(R.id.usersLocationTextView);
         closestVaccinationCenterLabelTextView = findViewById(R.id.closestVaccinationCenterLabelTextView);
         bookButton = findViewById(R.id.bookButton);
@@ -94,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     //Log.e("s1234",""+postSnapshot.getValue());
                     VaccinationCenter center = postSnapshot.getValue(VaccinationCenter.class);
                     availableVaccinationCenters.add(new VaccinationCenter(center.getId(),center.getLatitude(),center.getLongitude(),center.getName()));
+                    myLocations.add(center.getLatitude()+","+center.getLongitude()+","+center.getName());
                 }
                 displayClosestCenter();
             }
@@ -109,9 +114,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private void displayClosestCenter(){
         float minimumDistance = availableVaccinationCenters.get(0).getDistance(usersLocation);
         closestCenter = availableVaccinationCenters.get(0);
-        //Log.e("d324c user location","lat: "+usersLocation.getLatitude()+" long: "+usersLocation.getLongitude());
         for (VaccinationCenter center : availableVaccinationCenters) {
-            if(minimumDistance < center.getDistance(usersLocation)){
+            if(minimumDistance > center.getDistance(usersLocation)){
                 minimumDistance = center.getDistance(usersLocation);
                 closestCenter = center;
             }
@@ -145,6 +149,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
         });
     }//readDb
+
+    public void showMapMethod(View view){
+
+        Intent intent= new Intent(this,MapsActivity.class);
+        intent.putStringArrayListExtra("myLocations",myLocations);
+        startActivity(intent);
+
+    }
 
     public void signUpMethod(View view){
         mAuth.createUserWithEmailAndPassword(emailEditText.getText().toString(),passwordEditText.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -203,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         userTextView.setVisibility(View.INVISIBLE);
         usersLocationTextView.setVisibility(View.INVISIBLE);
         closestVaccinationCenterLabelTextView.setVisibility(View.INVISIBLE);
+        showMapButton.setVisibility(View.INVISIBLE);
         bookButton.setVisibility(View.INVISIBLE);
         datePicker1.setVisibility(View.INVISIBLE);
         adminReporTextView.setVisibility(View.INVISIBLE);
@@ -247,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     private void userActions(){
         usersLocationTextView.setVisibility(View.VISIBLE);
+        showMapButton.setVisibility(View.VISIBLE);
         gpsActions();
     }
 
@@ -262,7 +276,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             //manager.removeUpdates(this); //close it
         }
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

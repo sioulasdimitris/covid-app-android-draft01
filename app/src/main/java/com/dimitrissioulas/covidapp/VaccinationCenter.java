@@ -2,6 +2,8 @@ package com.dimitrissioulas.covidapp;
 
 import android.location.Location;
 
+import java.io.Serializable;
+
 public class VaccinationCenter {
     private String id;
     private String latitude;

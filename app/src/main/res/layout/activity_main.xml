@@ -147,4 +147,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/showMapButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="112dp"
+        android:onClick="showMapMethod"
+        android:text="SHOW MAP"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.424"
+        app:layout_constraintStart_toEndOf="@+id/emailEditText"
+        app:layout_constraintTop_toBottomOf="@+id/signOutButton" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
