@@ -5,6 +5,7 @@ import android.location.Location;
 import java.io.Serializable;
 
 public class VaccinationCenter {
+    private String description;
     private String id;
     private String latitude;
     private String longitude;
@@ -17,7 +18,7 @@ public class VaccinationCenter {
 
     }
 
-    public VaccinationCenter(String id, String latitude, String longitude, String name) {
+    public VaccinationCenter(String description, String id, String latitude, String longitude, String name) {
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -29,6 +30,14 @@ public class VaccinationCenter {
 
     public float getDistance(Location usersLocation){
         return usersLocation.distanceTo(this.getCenterLocation());
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Location getCenterLocation() {
