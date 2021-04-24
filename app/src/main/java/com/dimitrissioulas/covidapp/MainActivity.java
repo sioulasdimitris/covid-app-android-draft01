@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -36,6 +37,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
@@ -43,12 +45,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private FirebaseDatabase database; //database object
     private FirebaseAuth mAuth;
     private EditText emailEditText,passwordEditText;
-    private Button signInButton,signOutButton, signUpButton,bookButton, showMapButton;
-    private TextView userTextView,usersLocationTextView,adminReporTextView,closestVaccinationCenterLabelTextView,apointmentsDateTextView,usersIdTextView;
-    private DatePicker datePicker1;
+    private Button signInButton,signOutButton, signUpButton,bookButton, showMapButton,selectDateButton;
+    private TextView userTextView,usersLocationTextView,adminReporTextView,closestVaccinationCenterLabelTextView;
     private ListView allAppointmentsListView;
     // variables
     ArrayAdapter<String> listAdapter;
+    private String selectedDate;
     private String email;
     private boolean isAdmin = false;
     private ArrayList<VaccinationCenter> availableVaccinationCenters = new ArrayList<VaccinationCenter>();
@@ -102,11 +104,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         usersLocationTextView = findViewById(R.id.usersLocationTextView);
         closestVaccinationCenterLabelTextView = findViewById(R.id.closestVaccinationCenterLabelTextView);
         bookButton = findViewById(R.id.bookButton);
-        datePicker1 = findViewById(R.id.datePicker1);
         adminReporTextView = findViewById(R.id.adminReporTextView);
         allAppointmentsListView = findViewById(R.id.allAppointmentsListView);
-        apointmentsDateTextView  = findViewById(R.id.apointmentsDateTextView);
-        //usersIdTextView = findViewById(R.id.usersIdTextView);
+        selectDateButton = findViewById(R.id.selectDateButton);
     }//instatiateViews
 
     private void readDbCheckAvailableVaccinationCenters(){
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         closestVaccinationCenterLabelTextView.setVisibility(View.VISIBLE);
         closestVaccinationCenterLabelTextView.setText("Closest Vaccination Center: "+"\n"+closestCenter.getName());
         bookButton.setVisibility(View.VISIBLE);
-        datePicker1.setVisibility(View.VISIBLE);
+        selectDateButton.setVisibility(View.VISIBLE);
     }
 
     private void readDbCheckUser(){
@@ -157,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
                     for (DataSnapshot postSnapshot: snapshot.getChildren()) {
                         Admin admin = postSnapshot.getValue(Admin.class);
-                        Log.e("xaxa",""+admin.getEmail());
                         adminActions(admin.getCenter_id());
                     }
 
@@ -175,11 +174,33 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         });
     }//readDb
 
+    public void pickDate(View view){
+        // Get Current Date
+        final Calendar c = Calendar.getInstance();
+        int mYear = c.get(Calendar.YEAR);
+        int mMonth = c.get(Calendar.MONTH);
+        int mDay = c.get(Calendar.DAY_OF_MONTH);
+
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year,
+                                          int monthOfYear, int dayOfMonth) {
+
+                        selectedDate = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+
+                    }
+                }, mYear, mMonth, mDay);
+        datePickerDialog.show();
+    }
+
     public void showMapMethod(View view){
         Intent intent= new Intent(this,MapsActivity.class);
         intent.putStringArrayListExtra("myLocations",myLocations);
         startActivity(intent);
-    }
+    }//showMapMethod
 
     public void signUpMethod(View view){
         mAuth.createUserWithEmailAndPassword(emailEditText.getText().toString(),passwordEditText.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -215,18 +236,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }//signUpMethod
 
     public void bookAppointmentMethod(View view) throws ParseException {
-        DatabaseReference studentlistRef = database.getReference("appointments");
-        studentlistRef.push().setValue( new Appointment(uid,closestCenter.getId(),closestCenter.getName(),""+datePicker1.getDayOfMonth()+"-"+ (datePicker1.getMonth() + 1)+"-"+datePicker1.getYear())).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Toast.makeText(getApplicationContext(), "BOOKED!!!",Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), task.getException().toString(),Toast.LENGTH_LONG).show();
+        if(selectedDate != null) {
+            DatabaseReference studentlistRef = database.getReference("appointments");
+            studentlistRef.push().setValue( new Appointment(uid,closestCenter.getId(),closestCenter.getName(),""+selectedDate)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        Toast.makeText(getApplicationContext(), "BOOKED!!!",Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), task.getException().toString(),Toast.LENGTH_LONG).show();
+                    }
                 }
-            }
-        });
-
+            });
+        } else {
+            Toast.makeText(getApplicationContext(), "Select a date first!!",Toast.LENGTH_LONG).show();
+        }
     }//bookAppointmentMethod
 
     private void signedOutActions(){
@@ -240,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         closestVaccinationCenterLabelTextView.setVisibility(View.INVISIBLE);
         showMapButton.setVisibility(View.INVISIBLE);
         bookButton.setVisibility(View.INVISIBLE);
-        datePicker1.setVisibility(View.INVISIBLE);
+        selectDateButton.setVisibility(View.INVISIBLE);
         adminReporTextView.setVisibility(View.INVISIBLE);
         allAppointmentsListView.setVisibility(View.INVISIBLE);
         manager.removeUpdates(this); //close it

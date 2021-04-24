@@ -125,17 +125,6 @@
         app:layout_constraintTop_toBottomOf="@+id/closestVaccinationCenterLabelTextView"
         app:layout_constraintVertical_bias="0.92" />
 
-
-    <DatePicker
-        android:id="@+id/datePicker1"
-        android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_centerHorizontal="true"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <TextView
         android:id="@+id/adminReporTextView"
         android:layout_width="wrap_content"
@@ -170,6 +159,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.424"
         app:layout_constraintStart_toEndOf="@+id/emailEditText"
+        app:layout_constraintTop_toBottomOf="@+id/signOutButton" />
+
+    <Button
+        android:id="@+id/selectDateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="224dp"
+        android:onClick="pickDate"
+        android:text="SELECT DATE"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.905"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/signOutButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
