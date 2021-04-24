@@ -28,6 +28,14 @@ public class Appointment {
         this.date2 = calculateSecondsDoseDate(date);
     }
 
+    public Appointment(String uid, String centerId, String centerName, String date, String date2) throws ParseException {
+        this.uid = uid;
+        this.centerId = centerId;
+        this.centerName = centerName;
+        this.date = date;
+        this.date2 = date2;
+    }
+
     private String calculateSecondsDoseDate(String date) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         Calendar c = Calendar.getInstance();

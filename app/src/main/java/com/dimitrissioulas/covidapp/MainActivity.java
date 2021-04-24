@@ -13,9 +13,11 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,9 +44,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private FirebaseAuth mAuth;
     private EditText emailEditText,passwordEditText;
     private Button signInButton,signOutButton, signUpButton,bookButton, showMapButton;
-    private TextView userTextView,usersLocationTextView,adminReporTextView,closestVaccinationCenterLabelTextView;
+    private TextView userTextView,usersLocationTextView,adminReporTextView,closestVaccinationCenterLabelTextView,apointmentsDateTextView,usersIdTextView;
     private DatePicker datePicker1;
+    private ListView allAppointmentsListView;
     // variables
+    ArrayAdapter<String> listAdapter;
     private String email;
     private boolean isAdmin = false;
     private ArrayList<VaccinationCenter> availableVaccinationCenters = new ArrayList<VaccinationCenter>();
@@ -100,6 +104,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         bookButton = findViewById(R.id.bookButton);
         datePicker1 = findViewById(R.id.datePicker1);
         adminReporTextView = findViewById(R.id.adminReporTextView);
+        allAppointmentsListView = findViewById(R.id.allAppointmentsListView);
+        apointmentsDateTextView  = findViewById(R.id.apointmentsDateTextView);
+        //usersIdTextView = findViewById(R.id.usersIdTextView);
     }//instatiateViews
 
     private void readDbCheckAvailableVaccinationCenters(){
@@ -235,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         bookButton.setVisibility(View.INVISIBLE);
         datePicker1.setVisibility(View.INVISIBLE);
         adminReporTextView.setVisibility(View.INVISIBLE);
+        allAppointmentsListView.setVisibility(View.INVISIBLE);
         manager.removeUpdates(this); //close it
     }//signedOutActions
 
@@ -300,6 +308,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }//getAllAppointments
 
     private void getAppointmentsForParticularCenterByDay(String centerId){ //for each admin, the appointments of his center will be displayed
+        List<String> listItem = new ArrayList<String>();
         DatabaseReference appointmentsRef = database.getReference("appointments");
         Query query = appointmentsRef.orderByChild("centerId").equalTo(centerId);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -308,12 +317,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 if(snapshot.exists()){//check if there are booked appointments
                     for (DataSnapshot postSnapshot: snapshot.getChildren()) {
                         Appointment appointment = postSnapshot.getValue(Appointment.class);
-                        adminReporTextView.setText(adminReporTextView.getText()+"\n"+appointment.getDate().toString()+"\n"+appointment.getUid()+"______"+"\n");
+                        listItem.add(appointment.getDate()+" "+appointment.getUid());
+                        listItem.add(appointment.getDate2()+" "+appointment.getUid());
                     }
-                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
-                        Appointment appointment = postSnapshot.getValue(Appointment.class);
-                        adminReporTextView.setText(adminReporTextView.getText()+"\n"+appointment.getDate2().toString()+"\n"+appointment.getUid()+"______"+"\n");
-                    }
+
+                    listAdapter = new ArrayAdapter<String>(getBaseContext(), R.layout.appointments_list, R.id.apointmentsDateTextView, listItem);
+                    allAppointmentsListView.setVisibility(View.VISIBLE);
+                    allAppointmentsListView.setAdapter(listAdapter);
+
                 } else {
                     adminReporTextView.setText("All Appointments: "+"\n"+"No Appointments yet...");
                 }
