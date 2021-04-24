@@ -62,11 +62,32 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         setContentView(R.layout.activity_main);
 
         //instatiate
+        instatiate();
+
+        //instatiate views
+        instatiateViews();
+
+        //check if the user is logged in
+        checkUserLoggedInSession();
+
+    }//onCreate
+
+    private void checkUserLoggedInSession(){
+        if(mAuth.getInstance().getCurrentUser()!= null){
+            uid = mAuth.getUid();
+            signedInAndSignedUpActions();
+        } else {
+            signedOutActions();
+        }
+    }
+
+    private void instatiate(){
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         manager = (LocationManager)getSystemService(LOCATION_SERVICE);
+    }//instatiate
 
-        //instatiate views
+    private void instatiateViews(){
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         signInButton = findViewById(R.id.signInButton);
@@ -79,16 +100,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         bookButton = findViewById(R.id.bookButton);
         datePicker1 = findViewById(R.id.datePicker1);
         adminReporTextView = findViewById(R.id.adminReporTextView);
-
-        //check if the user is logged in
-        if(mAuth.getInstance().getCurrentUser()!= null){
-            uid = mAuth.getUid();
-            signedInAndSignedUpActions();
-        } else {
-            signedOutActions();
-        }
-
-    }//onCreate
+    }//instatiateViews
 
     private void readDbCheckAvailableVaccinationCenters(){
         DatabaseReference vaccinationCentersRef = database.getReference("vaccination_centers");
@@ -157,11 +169,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }//readDb
 
     public void showMapMethod(View view){
-
         Intent intent= new Intent(this,MapsActivity.class);
         intent.putStringArrayListExtra("myLocations",myLocations);
         startActivity(intent);
-
     }
 
     public void signUpMethod(View view){
@@ -244,10 +254,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         closestVaccinationCenterLabelTextView.setVisibility(View.INVISIBLE);
         adminReporTextView.setVisibility(View.VISIBLE);
         //getAllAppointments();
-        getAppointmentsForParticularCenter(centerId);
+        getAppointmentsForParticularCenterByDay(centerId);
     }
 
-    private void getAllAppointments(){
+    private void getAllAppointments(){ //not used
         DatabaseReference appointmentsRef = database.getReference("appointments");
         Query query = appointmentsRef.orderByChild("centerId");
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -269,8 +279,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     }//getAllAppointments
 
-    private void getAppointmentsForParticularCenter(String centerId){
-        Log.e("aaf32",""+centerId);
+    private void getAppointmentsForParticularCenter(String centerId){ //not used  //for each admin, the appointments of his center will be displayed
         DatabaseReference appointmentsRef = database.getReference("appointments");
         Query query = appointmentsRef.orderByChild("centerId").equalTo(centerId);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -288,8 +297,33 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
             }
         });
+    }//getAllAppointments
 
+    private void getAppointmentsForParticularCenterByDay(String centerId){ //for each admin, the appointments of his center will be displayed
+        DatabaseReference appointmentsRef = database.getReference("appointments");
+        Query query = appointmentsRef.orderByChild("centerId").equalTo(centerId);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){//check if there are booked appointments
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        Appointment appointment = postSnapshot.getValue(Appointment.class);
+                        adminReporTextView.setText(adminReporTextView.getText()+"\n"+appointment.getDate().toString()+"\n"+appointment.getUid()+"______"+"\n");
+                    }
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        Appointment appointment = postSnapshot.getValue(Appointment.class);
+                        adminReporTextView.setText(adminReporTextView.getText()+"\n"+appointment.getDate2().toString()+"\n"+appointment.getUid()+"______"+"\n");
+                    }
+                } else {
+                    adminReporTextView.setText("All Appointments: "+"\n"+"No Appointments yet...");
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                adminReporTextView.setText("All Appointments: "+"\n"+"No Appointments yet...");
+            }
+        });
     }//getAllAppointments
 
     private void userActions(){

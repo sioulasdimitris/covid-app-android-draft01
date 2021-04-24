@@ -31,7 +31,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
+    }//onCreate
 
     /**
      * Manipulates the map once available.
@@ -54,7 +54,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String name = fullLocation[2];
             latlng.add(new LatLng(latitude, longitude));
             mMap.addMarker(new MarkerOptions().position(latlng.get(i)).title(name));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng.get(i),15.0f));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng.get(i),14.0f));
         }
 
 
